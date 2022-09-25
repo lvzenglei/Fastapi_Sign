@@ -18,5 +18,5 @@ class Meeting_info(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     meeting_name = Column(String)
-    begin_time = Column(String)
-    end_time = Column(String)
+    begin_time = Column(Time)
+    end_time = Column(Time)

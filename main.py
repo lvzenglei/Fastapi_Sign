@@ -163,6 +163,38 @@ async def create_qccode(meeting_name: str=Form(...), begin_time: str=Form(...),e
     html_file = html_file.replace('qccode_content', base64_str)
     return HTMLResponse(html_file)
 
+# admin 创建qccode的页面
+@app.get("/admin/export/",tags=["admin"])
+
+async def export_excel(db: Session = Depends(get_db)):
+    html_file = open("sign_export.html", 'r').read()
+    return HTMLResponse(html_file)
+
+@app.post("/admin/export/",tags=["admin"])
+
+async def export_excel(meeting_name: str=Form(...),db: Session = Depends(get_db)):
+    datetime.time.sleep(0.5)
+    all_user = crud.get_user_info(db, meeting_name)
+    departments = []
+    user_names = []
+    meeting_names = []
+    times = []
+    for user in all_user:
+        departments.append(user.department)
+        user_names.append(user.user_name)
+        meeting_names.append(user.meeting_name)
+        times.append(user.time)
+    df = pd.DataFrame({
+        'meeting_name':meeting_names,
+        'department':departments,
+        'user_name':user_names,
+        'time':times,
+    })
+    file = 'export.csv'
+    df.to_csv(file,index= False)
+    return FileResponse(file,filename=f'{meeting_name}.csv')
+
+
 @app.get("/user/sign/",tags=["user"])
 
 async def user_sign(db: Session = Depends(get_db)):
