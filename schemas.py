@@ -23,6 +23,8 @@ class Meeting_infoBase(BaseModel):
 class Meeting_infoCreate(Meeting_infoBase):
     pass
 
+class Meeting_infoUpdate(Meeting_infoBase):
+    pass
 
 class Meeting_info(Meeting_infoBase):
     id: int
