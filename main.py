@@ -220,10 +220,10 @@ async def add_user_sign(department: str=Form(...),user_name: str=Form(...),meeti
             meeting_begintime = meeting_info.begin_time
             meeting_endtime = meeting_info.end_time
             if datetime.datetime.now() > meeting_endtime:
-                html_file = html_file.replace('签到状态','已过签到截至时间,无法签到')
+                html_file = html_file.replace('签到状态',f'签到截至时间为{meeting_endtime},无法签到')
                 return HTMLResponse(html_file)
             if datetime.datetime.now() > meeting_begintime:
-                html_file = html_file.replace('签到状态',f'签到开始时间为{meeting_begintime},暂时无法签到，')
+                html_file = html_file.replace('签到状态',f'签到开始时间为{meeting_begintime},暂时无法签到')
                 return HTMLResponse(html_file)
         crud.create_user_info(db, user_info)
         html_file = html_file.replace('签到状态','签到失败')
