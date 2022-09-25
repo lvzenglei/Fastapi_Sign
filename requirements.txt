@@ -7,3 +7,4 @@ FastAPI-SQLAlchemy
 psycopg2
 pandas
 Image
+aiofiles

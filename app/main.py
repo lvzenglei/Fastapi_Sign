@@ -102,7 +102,7 @@ async def export_excel(meeting_name: str=Form(...),db: Session = Depends(get_db)
         'time':times,
     })
     file = 'export.csv'
-    df.to_csv(file,index= False,date_format='%Y/%m/%d %H:%M:%S')
+    df.to_csv(file,index= False,date_format='%Y/%m/%d %H:%M:%S',encoding='utf_8_sig')
     return FileResponse(file,filename=f'{meeting_name}.csv')
 
 
