@@ -1,0 +1,29 @@
+version: '3.1'
+services:
+  fastapi:
+    command: uvicorn main:app --host=0.0.0.0 --port=1111
+    deploy: { replicas: 1 }
+    user: root
+    sysctls:
+         - net.core.somaxconn=4000
+    image: fastapi_sign:1.7
+    ports: [ '0.0.0.0:1111:1111','0.0.0.0:1112:1112']
+    volumes:
+      - /etc/localtime:/etc/localtime   
+    restart: always
+    working_dir: /code/app
+  postgres:
+   image: postgres:12-alpine
+   container_name: sign_postgres
+   restart: always
+   environment:
+       POSTGRES_USER: postgres
+       POSTGRES_PASSWORD: postgres
+   ports:
+     - 0.0.0.0:5433:5432
+   volumes:
+     - /data/compose/postgresql/data:/var/lib/postgresql/data
+networks:
+  default:
+    external:
+      name: service
