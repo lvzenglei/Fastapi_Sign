@@ -6,7 +6,7 @@ services:
     user: root
     sysctls:
          - net.core.somaxconn=4000
-    image: fastapi_sign:2.1
+    image: fastapi_sign:2.2
     ports: [ '0.0.0.0:1111:1111']
     volumes:
       - /etc/localtime:/etc/localtime   
