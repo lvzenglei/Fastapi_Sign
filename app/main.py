@@ -47,7 +47,7 @@ async def create_qccode(db: Session = Depends(get_db)):
 @app.post("/admin/sign/",tags=["admin"])
 
 async def create_qccode(meeting_name: str=Form(...), begin_time: str=Form(...),end_time: str=Form(...),db: Session = Depends(get_db)):
-    img = qrcode.make('http://192.168.3.222:1111/user/sign/')
+    img = qrcode.make('http://46.30.215.194:1111/user/sign/')
     # filepath = f'./{meeting_name}_meeting_qrcode.png'
     # with open(filepath, 'wb') as f:
     #     img.save(f)
