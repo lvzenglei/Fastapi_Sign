@@ -109,7 +109,12 @@ async def export_excel(meeting_name: str=Form(...),db: Session = Depends(get_db)
 @app.get("/user/sign/",tags=["user"])
 
 async def user_sign(db: Session = Depends(get_db)):
+    lastest_meeting = crud.get_meeting_info_by_time(db)
+    default_meeting_name = ''
+    if lastest_meeting:
+        default_meeting_name  = lastest_meeting.meeting_name
     html_file = open("html/sign.html", 'r').read()
+    html_file = html_file.replace('default_meeting_name',default_meeting_name)
     return HTMLResponse(html_file)
 
 # admin 创建qccode的页面
