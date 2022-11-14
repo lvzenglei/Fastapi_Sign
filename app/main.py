@@ -47,7 +47,7 @@ async def create_qccode(db: Session = Depends(get_db)):
 @app.post("/admin/sign/",tags=["admin"])
 
 async def create_qccode(meeting_name: str=Form(...), begin_time: str=Form(...),end_time: str=Form(...),db: Session = Depends(get_db)):
-    img = qrcode.make('http://signin.singleronbio.com/user/sign/')
+    img = qrcode.make(f'http://192.168.3.222:1111/user/sign/{meeting_name}')
     # filepath = f'./{meeting_name}_meeting_qrcode.png'
     # with open(filepath, 'wb') as f:
     #     img.save(f)
@@ -106,7 +106,7 @@ async def export_excel(meeting_name: str=Form(...),db: Session = Depends(get_db)
     return FileResponse(file,filename=f'{meeting_name}.csv')
 
 
-@app.get("/user/sign/",tags=["user"])
+@app.get("/user/sign/{meeting_name}",tags=["user"])
 
 async def user_sign(db: Session = Depends(get_db)):
     lastest_meeting = crud.get_meeting_info_by_time(db)
@@ -118,9 +118,9 @@ async def user_sign(db: Session = Depends(get_db)):
     return HTMLResponse(html_file)
 
 # admin 创建qccode的页面
-@app.post("/user/sign/",tags=["user"])
+@app.post("/user/sign/{meeting_name}",tags=["user"])
 
-async def add_user_sign(department: str=Form(...),user_name: str=Form(...),meeting_name: str=Form(...),db: Session = Depends(get_db)):
+async def add_user_sign(meeting_name,department: str=Form(...),user_name: str=Form(...),db: Session = Depends(get_db)):
     try:
         user_info = defaultdict()
         user_info['department'] = department
