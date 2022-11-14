@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>签到导出后台</title>
+        <link rel="stylesheet" href="{{ url_for('static', path='/css/sign.css') }}" charset="utf-8">
+    
+    </head>
+    <body>
+        <form action="" method="POST" >
+    
+            <div id="sign">
+                <h1>签到导出后台</h1>
+                <!-- <p>用户进行会议签到</p> -->
+    
+                <div class="form">
+                    <div class="item">
+                        <p>会议名称</p>
+                        <input  placeholder="会议名称" name="meeting_name" value="{{default_meeting_name}}" type="text" required="required">
+                    </div>
+                </div><br>
+                <!-- <input type="submit" value="提交" class="btn" /></br>   -->
+                <!-- 用button实现的Submit信息登记 -->
+                <button type="submit">导出</button>              
+            </div>
+        </form>
+    </body>
+</html>

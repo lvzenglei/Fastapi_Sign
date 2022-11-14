@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-sacle=1, maximum-scale=1" >
+    <title>会议签到系统</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/sign.css') }}" charset="utf-8">
+
+    <style>
+        input::-webkit-input-placeholder {
+            color:white;
+            font-size:12px;
+            font-size-adjust: 70%;
+        }
+        input::-moz-placeholder {
+            /* Mozilla Firefox 19+ */
+            color: white;
+            font-size:12px;
+            font-size-adjust: 70%;
+        }
+        input:-moz-placeholder {
+            /* Mozilla Firefox 4 to 18 */
+            color: white;
+            font-size:12px;
+            font-size-adjust: 70%;
+        }
+        input:-ms-input-placeholder {
+            /* Internet Explorer 10-11 */
+            color: white;
+            font-size:12px;
+            font-size-adjust: 70%;
+        }
+    </style>
+</head>
+<body>
+    <form action="" method="POST" >
+
+        <div id="sign">
+            <h1>签 到</h1>
+            <!-- <p>用户进行会议签到</p> -->
+
+            <div class="form">
+                <div class="item">
+                    <p>部 门</p>
+                    <input  placeholder="一级部门, 如 财务部" name="department" type="text" required="required">
+                </div>
+            </div><br>
+            <div class="form">
+                <div class="item">
+                    <p>姓 名</p>
+                    <input class="form-name" placeholder="姓名全称，如 ***" name="user_name" type="text" required="required" autofocus>
+                </div>
+            </div><br>
+        
+        
+            <!-- <input type="submit" value="提交" class="btn" /></br>   -->
+            <!-- 用button实现的Submit信息登记 -->
+            <button type="submit">提 交</button>              
+        </div>
+    </form>
+</body>
+<html>
+
+
+
+

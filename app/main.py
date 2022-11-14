@@ -1,7 +1,9 @@
 from datetime import datetime
-from fastapi import Depends, FastAPI, HTTPException, BackgroundTasks, Query, Form
+from fastapi import Depends, FastAPI, HTTPException, BackgroundTasks, Query, Form, Request
 from fastapi.responses import FileResponse,HTMLResponse
 from sqlalchemy.orm import Session
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 
 import crud, models, schemas
 from database import SessionLocal, engine
@@ -23,7 +25,12 @@ import time
 
 
 app = FastAPI(debug=True)
-
+app.mount(
+    "/static",
+    StaticFiles(directory=Path(__file__).parent.absolute() / "static"),
+    name="static",
+)
+templates = Jinja2Templates(directory="templates")
 # Dependency
 def get_db():
     db = SessionLocal()
@@ -40,13 +47,12 @@ def notice():
 # admin 创建qccode的页面
 @app.get("/admin/sign/",tags=["admin"])
 
-async def create_qccode(db: Session = Depends(get_db)):
-    html_file = open("html/sign_create_qccode.html", 'r').read()
-    return HTMLResponse(html_file)
+async def create_qccode(request:Request, db: Session = Depends(get_db)):
+    return templates.TemplateResponse("sign_create_qccode.html", {"request": request})
 
 @app.post("/admin/sign/",tags=["admin"])
 
-async def create_qccode(meeting_name: str=Form(...), begin_time: str=Form(...),end_time: str=Form(...),db: Session = Depends(get_db)):
+async def create_qccode(request:Request, meeting_name: str=Form(...), begin_time: str=Form(...),end_time: str=Form(...),db: Session = Depends(get_db)):
     img = qrcode.make(f'http://192.168.3.222:1111/user/sign/{meeting_name}')
     # filepath = f'./{meeting_name}_meeting_qrcode.png'
     # with open(filepath, 'wb') as f:
@@ -55,6 +61,7 @@ async def create_qccode(meeting_name: str=Form(...), begin_time: str=Form(...),e
     img.save(output_buffer, format='png')
     byte_data = output_buffer.getvalue()
     base64_str = base64.b64encode(byte_data).decode()
+    qccode_content = f"data:image/png;base64,{base64_str}"
     meeting_info = defaultdict()
     meeting_info['meeting_name'] = meeting_name
     meeting_info['begin_time'] = begin_time
@@ -64,22 +71,17 @@ async def create_qccode(meeting_name: str=Form(...), begin_time: str=Form(...),e
         crud.update_meeting_info(db, meeting_info)
     else:
         crud.create_meeting_info(db, meeting_info)
-    html_file = open("html/sign_qccode_content.html", 'r',encoding="utf-8").read()
-    html_file = html_file.replace('meeting_name',meeting_name)
-    html_file = html_file.replace('qccode_content', base64_str)
-    return HTMLResponse(html_file)
+    return templates.TemplateResponse("sign_qccode_content.html", {"request": request,"qccode_content": qccode_content,"meeting_name": meeting_name})
 
 # admin 创建qccode的页面
 @app.get("/admin/export/",tags=["admin"])
 
-async def export_excel(db: Session = Depends(get_db)):
+async def export_excel(request:Request, db: Session = Depends(get_db)):
     lastest_meeting = crud.get_meeting_info_by_time(db)
     default_meeting_name = ''
     if lastest_meeting:
         default_meeting_name  = lastest_meeting.meeting_name
-    html_file = open("html/sign_export.html", 'r').read()
-    html_file = html_file.replace('default_meeting_name',default_meeting_name)
-    return HTMLResponse(html_file)
+    return templates.TemplateResponse("sign_export.html", {"request": request,"default_meeting_name": default_meeting_name})
 
 @app.post("/admin/export/",tags=["admin"])
 
@@ -106,50 +108,45 @@ async def export_excel(meeting_name: str=Form(...),db: Session = Depends(get_db)
     return FileResponse(file,filename=f'{meeting_name}.csv')
 
 
-@app.get("/user/sign/{meeting_name}",tags=["user"])
+@app.get("/user/sign/{meeting_name}",tags=["user"], response_class=HTMLResponse)
 
-async def user_sign(db: Session = Depends(get_db)):
-    lastest_meeting = crud.get_meeting_info_by_time(db)
-    default_meeting_name = ''
-    if lastest_meeting:
-        default_meeting_name  = lastest_meeting.meeting_name
-    html_file = open("html/sign.html", 'r').read()
-    html_file = html_file.replace('default_meeting_name',default_meeting_name)
-    return HTMLResponse(html_file)
+async def user_sign(meeting_name, request: Request, db: Session = Depends(get_db)):
+    # lastest_meeting = crud.get_meeting_info_by_time(db)
+    # default_meeting_name = ''
+    # if lastest_meeting:
+    #     default_meeting_name  = lastest_meeting.meeting_name
+    # html_file = open("html/sign.html", 'r').read()
+    # html_file = html_file.replace('default_meeting_name',default_meeting_name)
+    return templates.TemplateResponse("sign.html", {"request": request,"default_meeting_name": meeting_name})
 
 # admin 创建qccode的页面
 @app.post("/user/sign/{meeting_name}",tags=["user"])
 
-async def add_user_sign(meeting_name,department: str=Form(...),user_name: str=Form(...),db: Session = Depends(get_db)):
+async def add_user_sign( request: Request, meeting_name, department: str=Form(...), user_name: str=Form(...),db: Session = Depends(get_db)):
     try:
         user_info = defaultdict()
         user_info['department'] = department
         user_info['meeting_name'] = meeting_name
         user_info['user_name'] = user_name
         user_info['time'] = datetime.datetime.now()
-        html_file = open("html/sign_status.html", 'r').read()
+        sign_status = ''
         meeting_info = crud.get_meeting_info(db, meeting_name=meeting_name)
         if not meeting_info:
-            html_file = html_file.replace('签到状态','填写的会议名称不存在，请核查后重新填写')
-            return HTMLResponse(html_file)
+            sign_status = '填写的会议名称不存在，请核查后重新填写'
         else:
             meeting_begintime = meeting_info.begin_time
             meeting_endtime = meeting_info.end_time
             if datetime.datetime.now() > meeting_endtime:
-                html_file = html_file.replace('签到状态',f'签到截至时间为{meeting_endtime},无法签到')
-                return HTMLResponse(html_file)
+                sign_status = f'签到已停止，截止时间为{meeting_endtime}'
             if datetime.datetime.now() < meeting_begintime:
-                html_file = html_file.replace('签到状态',f'签到开始时间为{meeting_begintime},暂时无法签到')
-                return HTMLResponse(html_file)
+                sign_status = f'签到开始时间为{meeting_begintime},暂时无法签到'
             user = crud.get_user_info_by_user(db, user_name, meeting_name)
             if user:
-                html_file = html_file.replace('签到状态',f'当前用户已签到,无需二次签到')
-                return HTMLResponse(html_file)
-        crud.create_user_info(db, user_info)
-        html_file = html_file.replace('签到状态','签到成功')
-        return HTMLResponse(html_file)
+                sign_status = f'当前用户已签到,无需二次签到'
+        if  not sign_status:
+            crud.create_user_info(db, user_info)
+            sign_status = '签到成功'
+        return templates.TemplateResponse("sign_status.html", {"request": request,"sign_status": sign_status, "department": department, "user_name": user_name, "meeting_name": meeting_name})
     except:
-        print(department, user_name, meeting_name)
-        html_file = open("sign_status.html", 'r').read()
-        html_file = html_file.replace('签到状态','签到失败')
-        return HTMLResponse(html_file)
+        sign_status = '签到失败'
+        return templates.TemplateResponse("sign_status.html", {"request": request,"sign_status": sign_status, "department": department, "user_name": user_name, "meeting_name": meeting_name})
