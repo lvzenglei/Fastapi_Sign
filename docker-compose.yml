@@ -6,8 +6,8 @@ services:
     user: root
     sysctls:
          - net.core.somaxconn=4000
-    image: fastapi_sign:2.2
-    ports: [ '0.0.0.0:1111:1111']
+    image: fastapi:42
+    ports: [ '0.0.0.0:1111:1111','0.0.0.0:1112:1112']
     volumes:
       - /etc/localtime:/etc/localtime   
     restart: always
@@ -20,7 +20,7 @@ services:
        POSTGRES_USER: postgres
        POSTGRES_PASSWORD: postgres
    ports:
-     - 0.0.0.0:5432:5432
+     - 0.0.0.0:5433:5432
    volumes:
      - /data/compose/postgresql/data:/var/lib/postgresql/data
 networks:
